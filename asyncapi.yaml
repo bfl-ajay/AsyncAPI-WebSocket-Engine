@@ -1,0 +1,89 @@
+asyncapi: '2.6.0'
+id: 'urn:com:yourorg:asyncapi-ws'
+defaultContentType: application/json
+info:
+  title: Auto API Engine
+  version: '1.0.0'
+  description: AsyncAPI-driven WebSocket and REST engine
+  contact:
+    name: API Support
+    url: https://yourorg.example.com
+    email: support@yourorg.example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+tags:
+  - name: users
+    description: Operations for user management
+servers:
+  local:
+    url: ws://localhost:3000
+    protocol: ws
+channels:
+  user/create:
+    publish:
+      operationId: createUser
+      x-sql-query: "INSERT INTO users (name, email, password) VALUES (?,?,?)"
+      x-sql-fields: ["name", "email", "password"]
+      message:
+        $ref: '#/components/messages/CreateUser'
+  user/update:
+    publish:
+      operationId: updateUser
+      x-sql-query: "UPDATE users SET name = ?, email = ? WHERE id = ?"
+      x-sql-fields: ["name", "email", "id"]
+      message:
+        $ref: '#/components/messages/UpdateUser'
+  user/delete:
+    publish:
+      operationId: deleteUser
+      x-sql-procedure: "sp_delete_user"
+      x-sql-in: ["id"]
+      x-sql-out: ["name", "email"]
+      message:
+        $ref: '#/components/messages/DeleteUser'
+components:
+  messages:
+    CreateUser:
+      messageId: createUserMessage
+      name: CreateUser
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          name:
+            type: string
+          email:
+            type: string
+          password:
+            type: string
+            default: 'password123'
+        required:
+          - name
+          - email
+    UpdateUser:
+      messageId: updateUserMessage
+      name: UpdateUser
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          email:
+            type: string
+        required:
+          - id
+    DeleteUser:
+      messageId: deleteUserMessage
+      name: DeleteUser
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          id:
+            type: integer
+        required:
+          - id
